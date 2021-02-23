@@ -215,7 +215,7 @@ def download_data(url_data):
             except (zipfile.BadZipfile):
                 print('ERROR: ZIP package corrupted. Please try downloading again.')
                 return 1
-            print("--> Folder created: " + str(Path.cwd() / Path(zip_filename).stem))
+            print("--> Temporary folder created: " + str(Path.cwd() / Path(zip_filename).stem))
     except Exception as e:
         print("ERROR: %s" % e)
         return 1
