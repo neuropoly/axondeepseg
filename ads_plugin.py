@@ -152,6 +152,23 @@ class ADScontrol(ctrlpanel.ControlPanel):
         )
         sizer_h.Add(save_segmentation_button, flag=wx.SHAPED, proportion=1)
 
+        # Add the comboBox for the axon_shape selection
+        self.axon_shape_choices = ["circle", "ellipse"]
+        self.axon_shape_combobox = wx.ComboBox(
+            self,
+            choices=self.axon_shape_choices,
+            size=(100, 20),
+            value="Select the axon shape"
+        )
+        self.axon_shape_combobox.SetForegroundColour(button_label_color)
+        self.axon_shape_combobox.SetToolTip(
+            wx.ToolTip(
+                'Select what is the shape of the axons that will be considered when computing the morphometrics'
+                '. "circle" will use the mean diameter of the axons. "ellipse" will use minor axis of the axons.'
+            )
+        )
+        sizer_h.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
+
         # Add compute morphometrics button
         compute_morphometrics_button = wx.Button(self, label="Compute morphometrics")
         compute_morphometrics_button.SetForegroundColour(button_label_color)
@@ -517,8 +534,13 @@ class ADScontrol(ctrlpanel.ControlPanel):
         Compute morphometrics and save them to an Excel file.
         """
 
-        # Get pixel size
+        # Make sure the user selected an axon_shape
+        selected_axon_shape = self.axon_shape_combobox.GetStringSelection()
+        if selected_axon_shape not in self.axon_shape_choices:
+            self.show_message("Please select an axon shape.")
+            return
 
+        # Get pixel size
         try:
             pixel_size = self.pixel_size_float
         except:
@@ -583,7 +605,8 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     )
 
         # Compute statistics
-        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size)
+        stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size,
+                                             axon_shape=selected_axon_shape)
 
         for stats in stats_array:
 
