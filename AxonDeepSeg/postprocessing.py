@@ -26,17 +26,17 @@ def get_centroids(mask):
     )
     return ind_centroid
 
-def floodfill_axons(axon_array, myelin_array):
+def floodfill_axons(myelin_array):
     """
-    This function does a floodfill operation on the myelin_array. The seed points are the centroids of the axon objects
-    in the axon_array. The goal is to fill the center of the myelin objects with the axon mask.
+    This function does a floodfill operation on the myelin_array. The seed points are the centroids of the myelin
+    objects. The goal is to fill the center of the myelin objects with the axon mask.
     Note: The myelin objects need to be closed in order to prevent the axon_mask from flooding the entire image.
-    :param axon_array: the binary array corresponding to the axon mask
+    The myelin objects also need to be separated from each other, otherwise they will be counted as one object.
     :param myelin_array: the binary array corresponding to the myelin mask
     :return: the binary axon array corresponding to the axon mask after the floodfill
     """
     # Get the centroid indexes
-    centroid_index_map = get_centroids(axon_array)
+    centroid_index_map = get_centroids(myelin_array)
 
     # Create an image with the myelinMask and floodfill at the coordinates of the centroids
     # Note: The floodfill algorithm only works on RGB images. Thus, the mask must be colorized before applying

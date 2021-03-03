@@ -35,7 +35,7 @@ class TestCore(object):
             ads_utils.extract_axon_and_myelin_masks_from_image_data(self.before_floodfill_image)
         after_ff_expected_axon_mask, _ = \
             ads_utils.extract_axon_and_myelin_masks_from_image_data(self.after_floodfill_image)
-        after_ff_obtained_axon_mask = postprocessing.floodfill_axons(before_ff_axon_mask, before_ff_myelin_mask)
+        after_ff_obtained_axon_mask = postprocessing.floodfill_axons(before_ff_myelin_mask)
 
         assert np.array_equal(after_ff_obtained_axon_mask, after_ff_expected_axon_mask)
 
