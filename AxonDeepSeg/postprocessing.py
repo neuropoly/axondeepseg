@@ -135,3 +135,24 @@ def generate_axon_numbers_image(centroid_index, x0_array, y0_array, image_size, 
     image_array = np.asarray(number_image)
 
     return image_array.astype(np.uint8)
+
+def fill_myelin_holes(myelin_array):
+    """
+    This function uses the fill_small_holes function from scikit-image to fill closed myelin objects with the axon mask.
+    The maximum area of an axon is defined as 10% of the image's size.
+    :param myelin_array: the binary array corresponding to the myelin mask
+    :return: the binary axon array corresponding to the axon mask after the floodfill
+    """
+    # Get the dimensions of the image
+    image_dims = myelin_array.shape
+
+    # Define the maximum axon area as 10% of the image's size
+    maximum_axon_area = 0.1 * image_dims[0] * image_dims[1]
+
+    #Fill the myelin array
+    filled_array = morphology.remove_small_holes(myelin_array.astype(np.bool), area_threshold=maximum_axon_area)
+    filled_array = filled_array.astype(np.uint8)
+
+    #Extract the axon array
+    axon_extracted_array = filled_array-myelin_array
+    return axon_extracted_array
