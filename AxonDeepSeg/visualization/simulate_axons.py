@@ -59,7 +59,7 @@ class SimulateAxons:
                 the image.
         gratio: g-ratio of the axon. Determines the myelin thickness.
             gratio = (axon_radius)/(axon_radius+myelin thickness)
-        plane_angle: Degrees. Angle of the plan cutting through the angle.
+        plane_angle: Degrees. Angle of the plane cutting through the angle.
             Makes axons ellipsoidal in nature.
         """
 
