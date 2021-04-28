@@ -589,10 +589,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
                                 ('y0', 'f4'),
                                 ('gratio','f4'),
                                 ('axon_area','f4'),
+                                ('axon_perimeter','f4'),
                                 ('myelin_area','f4'),
                                 ('axon_diam','f4'),
                                 ('myelin_thickness','f4'),
                                 ('axonmyelin_area','f4'),
+                                ('axonmyelin_perimeter','f4'),
                                 ('solidity','f4'),
                                 ('eccentricity','f4'),
                                 ('orientation','f4')
@@ -601,7 +603,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Compute statistics
         stats_array = get_axon_morphometrics(im_axon=pred_axon, im_myelin=pred_myelin, pixel_size=pixel_size)
-
+        # print(stats_array)
         for stats in stats_array:
 
             x = np.append(x,
@@ -611,10 +613,12 @@ class ADScontrol(ctrlpanel.ControlPanel):
                     stats['y0'],
                     stats['gratio'],
                     stats['axon_area'],
+                    stats['axon_perimeter'],
                     stats['myelin_area'],
                     stats['axon_diam'],
                     stats['myelin_thickness'],
                     stats['axonmyelin_area'],
+                    stats['axonmyelin_perimeter'],
                     stats['solidity'],
                     stats['eccentricity'],
                     stats['orientation']

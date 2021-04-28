@@ -110,6 +110,8 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
         axon_diam = prop_axon.equivalent_diameter * pixelsize
         # Axon area in µm^2
         axon_area = prop_axon.area * (pixelsize ** 2)
+        # Axon perimeter in micrometers
+        axon_perimeter = prop_axon.perimeter * pixelsize
         # Axon orientation angle
         orientation = prop_axon.orientation
         # Add metrics to list of dictionaries
@@ -117,6 +119,7 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                  'x0': x0,
                  'axon_diam': axon_diam,
                  'axon_area': axon_area,
+                 'axon_perimeter': axon_perimeter,
                  'solidity': solidity,
                  'eccentricity': eccentricity,
                  'orientation': orientation}
@@ -137,10 +140,13 @@ def get_axon_morphometrics(im_axon, path_folder=None, im_myelin=None, pixel_size
                 myelin_area = (pixelsize ** 2) * _res2
 
                 axonmyelin_area = (pixelsize ** 2) * prop_axonmyelin.area
+                # Perimeter of axonmyelin instance in micrometers
+                axonmyelin_perimeter = prop_axonmyelin.perimeter * pixelsize
 
                 stats['myelin_thickness'] = myelin_thickness
                 stats['myelin_area'] = myelin_area
                 stats['axonmyelin_area'] = axonmyelin_area
+                stats['axonmyelin_perimeter'] = axonmyelin_perimeter
                 stats['gratio'] = np.sqrt(axon_area / axonmyelin_area)
             else:
                 print(
