@@ -1,0 +1,41 @@
+name: Pre-commit check hooks
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+
+jobs:
+  pre-commit-checks:
+    runs-on: 'ubuntu-latest'
+    # Default shell for ALL subsequent steps.
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install dependencies with Conda environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: ads_venv
+          auto-update-conda: true
+          environment-file: environment.yml
+      - name: Install AxonDeepSeg
+        run: |
+          conda activate ads_venv
+          pip install -e .
+          pre-commit install
+      - name: Run pre-commit large file check
+        run: pre-commit run --all-files check-added-large-files
+      - name: Run pre-commit YAML check # for GitHub Actions configs
+        run: pre-commit run --all-files check-yaml
+      - name: Run pre-commit notebooks clear output cells check
+        run: pre-commit run --all-files jupyter-nb-clear-output

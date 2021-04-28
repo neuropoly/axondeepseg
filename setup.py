@@ -14,15 +14,18 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+
 class PostDevelopCommand(develop):
     """Post-installation for installation mode."""
     def run(self):
 
         develop.run(self)
+        # download models and test files
         check_call("download_models")
         check_call("download_tests")
-
-
+        
+        # pre-commit install
+        check_call("pre-commit install".split())
 
 setup(
     name='AxonDeepSeg',
@@ -46,12 +49,14 @@ setup(
     package_data={
         "AxonDeepSeg": ['models/default_SEM_model/*',
                         'models/default_TEM_model/*',
+                        'models/model_seg_pns_bf/*',
                         'data_test/*'],
     },
     extras_require={
         'docs': ['sphinx>=1.6',
                  'sphinx_rtd_theme>=0.2.4',
                  'recommonmark'],
+        'dev': ["pre-commit>=2.10.0"]
     },
     include_package_data=True,
     entry_points={

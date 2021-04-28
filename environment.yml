@@ -28,6 +28,7 @@ dependencies:
   - Keras-Preprocessing
   - albumentations=0.3.0
   - openpyxl
+  - pre-commit
   - pip
   - pip:
     - opencv-contrib-python
