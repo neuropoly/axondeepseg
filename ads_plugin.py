@@ -35,7 +35,71 @@ import imageio
 
 from AxonDeepSeg.morphometrics.compute_morphometrics import *
 
-VERSION = "0.2.16"
+VERSION = "0.2.17"
+
+class ADSsettings:
+    """
+    This class handles everything related to the parameters used in the ADS plugin, including the frame for the settings
+    menu.
+    """
+    def __init__(self, ads_control):
+        """
+        Constructor for the ADSsettings class. Initializes the default settings.
+        :param ads_control: An instance of ADScontrol
+        :type ads_control: ADScontrol
+        """
+        self.ads_control = ads_control
+
+        # Declare the settings used
+        self.overlap_value = 25
+        self.model_resolution = 0.01  # Unused
+        self.use_custom_resolution = False  # Unused
+        self.custom_resolution = 0.07  # Unused
+        self.zoom_factor = 1.0
+
+    def on_settings_button(self, event):
+        """
+        This function creates the settings_frame (the settings menu). It is called when the 'settings' button has been
+        pressed.
+        """
+        self.settings_frame = wx.Frame(self.ads_control, title="Settings", size=(600, 300))
+        frame_sizer_h = wx.BoxSizer(wx.VERTICAL)
+
+        # Add the overlap value to the settings menu
+        sizer_overlap_value = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_overlap_value.Add(wx.StaticText(self.settings_frame, label="Overlap value (pixels): "))
+        self.overlap_value_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.overlap_value)
+        self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
+        sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_overlap_value)
+
+        # Add the zoom factor to the settings menu
+        sizer_zoom_factor = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_zoom_factor.Add(wx.StaticText(self.settings_frame, label="Zoom factor: "))
+        self.zoom_factor_spinCtrlDouble = wx.SpinCtrlDouble(self.settings_frame, initial=self.zoom_factor, inc=0.0001)
+        self.zoom_factor_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_zoom_factor_changed)
+        sizer_zoom_factor.Add(self.zoom_factor_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_zoom_factor)
+
+        # Add the done button
+        sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
+        done_button = wx.Button(self.settings_frame, label="Done")
+        done_button.Bind(wx.EVT_BUTTON, self.on_done_button)
+        sizer_done_button.Add(done_button, flag=wx.SHAPED, proportion=1)
+        frame_sizer_h.Add(sizer_done_button)
+
+        self.settings_frame.SetSizer(frame_sizer_h)
+        self.settings_frame.Show()
+
+    def on_overlap_value_changed(self, event):
+        self.overlap_value = self.overlap_value_spinCtrl.GetValue()
+
+    def on_zoom_factor_changed(self, event):
+        self.zoom_factor = self.zoom_factor_spinCtrlDouble.GetValue()
+
+    def on_done_button(self, event):
+        # TODO: make sure every setting is saved
+        self.settings_frame.Close()
 
 
 class ADScontrol(ctrlpanel.ControlPanel):
@@ -50,6 +114,9 @@ class ADScontrol(ctrlpanel.ControlPanel):
         :param ortho: This is used to access the ortho ops in order to turn off the X and Y canvas as well as the cursor
         """
         ctrlpanel.ControlPanel.__init__(self, ortho, *args, **kwargs)
+
+        # Create the settings object
+        self.settings = ADSsettings(self)
 
         # Add a sizer to the control panel
         # This sizer will contain the buttons
@@ -168,7 +235,7 @@ class ADScontrol(ctrlpanel.ControlPanel):
         # Add the settings button
         settings_button = wx.Button(self, label="Settings")
         settings_button.SetForegroundColour(button_label_color)
-        settings_button.Bind(wx.EVT_BUTTON, self.on_settings_button)
+        settings_button.Bind(wx.EVT_BUTTON, self.settings.on_settings_button)
         sizer_h.Add(settings_button, flag=wx.SHAPED, proportion=1)
 
         # Set the sizer of the control panel
@@ -200,14 +267,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
 
         # Check the version
         self.verrify_version()
-
-        #TODO: move the settings to another class
-        self.overlap_value = 25  # TODO: Move this to a more appropriate place later
-        self.model_resolution = 0.01
-        self.use_custom_resolution = False
-        self.custom_resolution = 0.07
-        self.zoom_factor = 1.0
-
 
     def on_load_png_button(self, event):
         """
@@ -363,10 +422,10 @@ class ADScontrol(ctrlpanel.ControlPanel):
         segment_image(
                       image_path,
                       model_path,
-                      self.overlap_value,
+                      self.settings.overlap_value,
                       config_network,
                       resolution,
-                      acquired_resolution=pixel_size_float * self.zoom_factor,
+                      acquired_resolution=pixel_size_float * self.settings.zoom_factor,
                       verbosity_level=3
                       )
 
@@ -652,101 +711,6 @@ class ADScontrol(ctrlpanel.ControlPanel):
         self.load_png_image_from_path(number_outfile, is_mask=False, colormap="yellow")
 
         return
-
-    def on_settings_button(self, event):
-        #TODO: Add a class for the settings. Perhaps even one for the window
-        self.settings_frame = wx.Frame(self, title="Settings", size=(600, 300))
-        frame_sizer_h = wx.BoxSizer(wx.VERTICAL)
-
-        # Since the axon shape doesn't do anything yet, I will just comment it
-
-        # frame_sizer_axon_choice = wx.BoxSizer(wx.HORIZONTAL)
-        # frame_sizer_axon_choice.Add(wx.StaticText(settings_frame, label="Axon Shape: "))
-        # self.axon_shape_choices = ["circle", "ellipse"]
-        # self.axon_shape_combobox = wx.ComboBox(
-        #     settings_frame,
-        #     choices=self.axon_shape_choices,
-        #     size=(100, 20),
-        #     value=self.axon_shape_choices[0]  # TODO: show the one currently selected
-        # )
-        # self.axon_shape_combobox.SetToolTip(
-        #     wx.ToolTip(
-        #         'Select what is the shape of the axons that will be considered when computing the morphometrics'
-        #         '. "circle" will use the mean diameter of the axons. "ellipse" will use minor axis of the axons.'
-        #     )
-        # )
-        # frame_sizer_axon_choice.Add(self.axon_shape_combobox, flag=wx.SHAPED, proportion=1)
-        # frame_sizer_h.Add(frame_sizer_axon_choice)
-
-        # Add the overlap value to the settings menu
-        sizer_overlap_value = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_overlap_value.Add(wx.StaticText(self.settings_frame, label="Overlap value (pixels): "))
-        self.overlap_value_spinCtrl = wx.SpinCtrl(self.settings_frame, min=0, max=100, initial=self.overlap_value)
-        self.overlap_value_spinCtrl.Bind(wx.EVT_SPINCTRL, self.on_overlap_value_changed)
-        sizer_overlap_value.Add(self.overlap_value_spinCtrl, flag=wx.SHAPED, proportion=1)
-        frame_sizer_h.Add(sizer_overlap_value)
-
-        # # Add the model resolution to the settings menu
-        # sizer_model_resolution = wx.BoxSizer(wx.HORIZONTAL)
-        # sizer_model_resolution.Add(wx.StaticText(settings_frame, label="Model resolution (um/pixel): "))
-        # self.model_resolution_spinCtrlDouble = wx.SpinCtrlDouble(
-        #     settings_frame, initial=self.model_resolution, inc=0.0001)
-        # self.model_resolution_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_model_resolution_value_changed)
-        # sizer_model_resolution.Add(self.model_resolution_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
-        # frame_sizer_h.Add(sizer_model_resolution)
-
-        # # Add the option to use a custom image resolution
-        # sizer_custom_resolution = wx.BoxSizer(wx.HORIZONTAL)
-        # self.use_custom_resolution_checkbox = wx.CheckBox(
-        #     settings_frame, label="Use custom image resolution (um/pixel): ")
-        # self.use_custom_resolution_checkbox.Bind(wx.EVT_CHECKBOX, self.on_use_custom_resolution_state_change)
-        # sizer_custom_resolution.Add(self.use_custom_resolution_checkbox)
-        # self.custom_resolution_spinCtrlDouble = wx.SpinCtrlDouble(
-        #     settings_frame, initial=self.custom_resolution, inc=0.0001)
-        # self.custom_resolution_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_custom_resolution_value_changed)
-        # sizer_custom_resolution.Add(self.custom_resolution_spinCtrlDouble)
-        # frame_sizer_h.Add(sizer_custom_resolution)
-
-        # Add the zoom factor to the settings menu
-        sizer_zoom_factor = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_zoom_factor.Add(wx.StaticText(self.settings_frame, label="Zoom factor: "))
-        self.zoom_factor_spinCtrlDouble = wx.SpinCtrlDouble(
-            self.settings_frame, initial=self.zoom_factor, inc=0.0001)
-        self.zoom_factor_spinCtrlDouble.Bind(wx.EVT_SPINCTRLDOUBLE, self.on_zoom_factor_changed)
-        sizer_zoom_factor.Add(self.zoom_factor_spinCtrlDouble, flag=wx.SHAPED, proportion=1)
-        frame_sizer_h.Add(sizer_zoom_factor)
-
-        # Add the done button
-        sizer_done_button = wx.BoxSizer(wx.HORIZONTAL)
-        done_button = wx.Button(self.settings_frame, label="Done")
-        done_button.Bind(wx.EVT_BUTTON, self.on_done_button)
-        sizer_done_button.Add(done_button, flag=wx.SHAPED, proportion=1)
-        frame_sizer_h.Add(sizer_done_button)
-
-        self.settings_frame.SetSizer(frame_sizer_h)
-        self.settings_frame.Show()
-
-    def on_overlap_value_changed(self, event):
-        self.overlap_value = self.overlap_value_spinCtrl.GetValue()
-        print(self.overlap_value)
-
-    def on_model_resolution_value_changed(self, event):
-        self.model_resolution = self.model_resolution_spinCtrlDouble.GetValue()
-
-    def on_use_custom_resolution_state_change(self, event):
-        self.use_custom_resolution = self.use_custom_resolution_checkbox.GetValue()
-        print(self.use_custom_resolution)
-
-    def on_custom_resolution_value_changed(self, event):
-        self.custom_resolution = self.custom_resolution_spinCtrlDouble.GetValue()
-        print(self.custom_resolution)
-
-    def on_zoom_factor_changed(self, event):
-        self.zoom_factor = self.zoom_factor_spinCtrlDouble.GetValue()
-
-    def on_done_button(self, event):
-        # TODO: make sure every setting is saved
-        self.settings_frame.Close()
 
     def get_watershed_segmentation(self, im_axon, im_myelin, return_centroids=False):
         """
