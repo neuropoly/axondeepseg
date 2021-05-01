@@ -125,25 +125,18 @@ def train_model(
     # Probability value of 0.5 is chosen so that the original as well augmented image are taken into account while training the model.
     if shifting:
         p_shift = 0.5
+    if rescaling:
+        p_rescale = 0.5
     if rotation:
         p_rotate = 0.5
+    if elastic:
+        p_elastic = 0.5
     if flipping:
         p_flip = 0.5
     if gaussian_blur:
         p_blur = 0.5
-    if elastic:
-        p_elastic = 0.5
 
     #####Data Augmentation parameters#####
-
-    # Elastic transform parameters
-    alpha_max = 9
-    sigma = 3
-    alpha = random.choice(list(range(1, alpha_max)))
-
-    # Random rotation parameters
-    low_bound = 5
-    high_bound = 89
 
     # Shifting parameters
     percentage_max = 0.1
@@ -151,19 +144,46 @@ def train_model(
     low_limit = 0
     high_limit = (2 * size_shift - 1) / image_size
 
+    # Rescaling parameters
+    low_rescale_bound = 0.8
+    high_rescale_bound = 1.2
+
+    # Random rotation parameters
+    low_bound = 5
+    high_bound = 89
+
+    # Elastic transform parameters
+    alpha_max = 9
+    sigma = 3
+    alpha = random.choice(list(range(1, alpha_max)))
+
     ######################################
 
     AUGMENTATIONS_TRAIN = Compose(
         [
-            # Randomy flips an image either horizontally, vertically or both.
-            Flip(p=p_flip),
-            # Randomly rotates an image between low limit and high limit.
+            # Randomly shifts an image between low limit and high limit.
             ShiftScaleRotate(
                 shift_limit=(low_limit, high_limit),
                 scale_limit=(0, 0),
                 rotate_limit=(0, 0),
                 border_mode=border_mode,
                 p=p_shift,
+                interpolation=cv2.INTER_NEAREST,
+            ),
+            # Randomly rescales an image between low rescale bound and high rescale bound.
+            ShiftScaleRotate(
+                shift_limit=(0, 0),
+                scale_limit=(low_rescale_bound, high_rescale_bound),
+                rotate_limit=(0, 0),
+                border_mode=border_mode,
+                p=p_shift,
+                interpolation=cv2.INTER_NEAREST,
+            ),
+            # Randomly rotates the image between low bound and high bound.
+            Rotate(
+                limit=(low_bound, high_bound),
+                border_mode=border_mode,
+                p=p_rotate,
                 interpolation=cv2.INTER_NEAREST,
             ),
             # Randomly applies elastic transformation on the image.
@@ -174,15 +194,10 @@ def train_model(
                 alpha_affine=alpha,
                 interpolation=cv2.INTER_NEAREST,
             ),
+            # Randomy flips an image either horizontally, vertically or both.
+            Flip(p=p_flip),
             # Blurs an image using gaussian kernel.
             GaussianBlur(p=p_blur),
-            # Randomly rotates the image between low bound and high bound.
-            Rotate(
-                limit=(low_bound, high_bound),
-                border_mode=border_mode,
-                p=p_rotate,
-                interpolation=cv2.INTER_NEAREST,
-            ),
         ]
     )
 
