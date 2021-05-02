@@ -168,12 +168,18 @@ GPU-compatible installation
 ---------------------------
 .. NOTE :: This feature is not available if you are using a macOS.
 
+Linux and Windows 10
+~~~~~~~
+
 By default, AxonDeepSeg installs the CPU version of TensorFlow. To train a model using your GPU, you need to uninstall the TensorFlow from your virtual environment, and install the GPU version of it::
 
-    pip uninstall tensorflow
-    pip install tensorflow-gpu==1.13.1
+    conda uninstall tensorflow
+    conda install -c anaconda tensorflow-gpu==1.13.1
 
-.. WARNING :: Because we recommend the use of version 1.13.1 of Tensorflow GPU, the CUDA version on your system should be 10.0. CUDA version less than 10 is not compatible with Tensorflow 1.13.1. To see the CUDA version installed on your system, run ``nvcc --version`` in your Linux terminal.
+This might uninstall keras in the process, so we need to install it again ::
+
+    conda install -c conda-forge keras==2.2.4
+    
 
 Existing models
 ===============
